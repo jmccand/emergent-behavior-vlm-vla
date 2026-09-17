@@ -83,7 +83,12 @@ class QwenVLReasoningAgent(ReasoningAgent):
 
         with torch.no_grad():
             output_ids = self.model.generate(
-                **inputs, max_new_tokens=self.max_new_tokens, do_sample=False
+                **inputs,
+                max_new_tokens=self.max_new_tokens,
+                do_sample=False,
+                temperature=None,
+                top_p=None,
+                top_k=None,
             )
         new_tokens = output_ids[:, inputs["input_ids"].shape[1] :]
         raw_text = self.processor.batch_decode(new_tokens, skip_special_tokens=True)[0]
