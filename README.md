@@ -73,6 +73,23 @@ python scripts/check_setup.py --config configs/default.yaml
 python scripts/run_episode.py --config configs/default.yaml --task-id 0 --episodes 1
 ```
 
+To inspect a run afterwards -- the rollout video plus every subgoal and raw
+model output -- pass `--record`:
+
+```bash
+python scripts/run_episode.py --config configs/default.yaml --task-id 0 --episodes 1 --record
+```
+
+Each episode is written to its own timestamped directory under `outputs/`
+(override with `--output-dir`):
+
+- `episode.mp4` -- the rollout, one frame per step (`--camera` selects which
+  `Observation.images` key to record, e.g. `image` vs `image2` for wrist cam).
+- `plans.jsonl` -- one row per subgoal issued by the reasoning agent
+  (`instruction`, `reasoning`, and the raw VLM response in `metadata`).
+- `steps.jsonl` -- one row per control step (`action`, `reward`, `done`,
+  `info`, and the instruction active at that step).
+
 The first `run_episode.py`/`check_setup.py` call downloads Qwen3-VL-8B-Instruct
 (~16GB) and the SmolVLA checkpoint from Hugging Face Hub; later runs use the
 local cache (`~/.cache/huggingface`) and start much faster. The first
