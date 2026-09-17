@@ -1,0 +1,26 @@
+[project]
+name = "vlm-vla"
+version = "0.1.0"
+description = "Modular dual-system (VLM reasoning + VLA action) framework, ThinkAct-inspired, LIBERO-backed."
+requires-python = ">=3.12"
+dependencies = [
+    "torch",
+    "torchvision",
+    "transformers>=4.57",
+    "accelerate",
+    "qwen-vl-utils",
+    "pillow",
+    "numpy",
+    "requests",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
