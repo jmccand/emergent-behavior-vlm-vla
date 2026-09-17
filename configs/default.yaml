@@ -1,0 +1,23 @@
+# Backend selection. Swap any of these independently -- the orchestrator and
+# the other two backends never need to change.
+
+reasoning:
+  backend: qwen_vl
+  model_id: Qwen/Qwen3-VL-8B-Instruct
+  device: mps
+  max_new_tokens: 256
+
+action:
+  backend: smolvla
+  checkpoint: lerobot/smolvla_libero
+  device: mps
+
+simulator:
+  backend: libero_docker
+  host: localhost
+  port: 8000
+  task_suite: libero_spatial
+
+orchestrator:
+  replan_every: 30
+  max_steps: 300
