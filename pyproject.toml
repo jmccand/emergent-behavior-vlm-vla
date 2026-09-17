@@ -13,6 +13,7 @@ dependencies = [
     "numpy",
     "requests",
     "pyyaml",
+    "imageio[ffmpeg]",
 ]
 
 [project.optional-dependencies]
