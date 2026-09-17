@@ -29,7 +29,10 @@ class SmolVLAActionAgent(ActionAgent):
     def __init__(self, checkpoint: str = "lerobot/smolvla_libero", device: str = "mps") -> None:
         self.device = device
         logger.info("Loading action VLA %s on %s", checkpoint, device)
-        self.policy = SmolVLAPolicy.from_pretrained(checkpoint)
+        # `device=` alone doesn't override the checkpoint's saved config (only `cli_overrides`
+        # reaches draccus before its device-availability check), so the checkpoint's default
+        # `device: cuda` would otherwise trip lerobot's "switching to 'mps'" warning here.
+        self.policy = SmolVLAPolicy.from_pretrained(checkpoint, cli_overrides=[f"--device={device}"])
         self.policy.to(device)
         self.policy.eval()
         self.preprocessor, self.postprocessor = make_pre_post_processors(
