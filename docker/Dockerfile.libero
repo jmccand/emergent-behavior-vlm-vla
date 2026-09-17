@@ -1,0 +1,63 @@
+# LIBERO simulator, isolated in Linux because robosuite/MuJoCo's LeRobot
+# integration is Linux-only. Builds natively as linux/arm64 on Apple Silicon
+# hosts (Docker Desktop matches the host arch by default) -- no emulation.
+FROM python:3.12-slim
+
+# Software (CPU) rendering: Docker Desktop on macOS does not pass through a
+# GPU to Linux containers, so EGL is unavailable -- MuJoCo must render via
+# OSMesa instead.
+ENV MUJOCO_GL=osmesa \
+    PYOPENGL_PLATFORM=osmesa \
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_DEFAULT_TIMEOUT=180 \
+    PIP_RETRIES=10
+
+RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y --no-install-recommends \
+    git \
+    build-essential \
+    cmake \
+    libosmesa6-dev \
+    libgl1 \
+    libglx0 \
+    libglew-dev \
+    libglfw3 \
+    patchelf \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/lerobot
+RUN git clone --depth 1 https://github.com/huggingface/lerobot.git . \
+    && pip install --no-cache-dir -e ".[libero]"
+
+# robosuite (a lerobot[libero] dependency) pulls in full `opencv-python` (GUI
+# build, not headless) alongside lerobot's own opencv-python-headless, because
+# robosuite.utils.opencv_renderer imports cv2 unconditionally at module load
+# time -- even though we never use its on-screen renderer here. The GUI wheel
+# needs a handful of runtime shared libraries (GTK/X11) that aren't bundled in
+# the manylinux wheel and aren't installed by the OSMesa-only package list
+# above. Installed as a separate, later layer so it doesn't invalidate the
+# (extremely slow) pip install layer above on rebuild.
+RUN apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update \
+    && apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install -y --no-install-recommends \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# `libero`'s package __init__ interactively prompts ("Do you want to specify a
+# custom path for the dataset folder? (Y/N):") the first time it's imported,
+# writing ~/.libero/config.yaml with the answer. There's no non-interactive
+# flag for this, so pre-answer "N" (use the package's bundled defaults) once
+# at build time so the config file already exists before the server ever
+# imports libero at request time -- otherwise the prompt's input() call hits
+# EOF (no stdin) and crashes the request with a 500.
+RUN echo "N" | python -c "import libero.libero"
+
+RUN pip install --no-cache-dir fastapi "uvicorn[standard]" pydantic pillow numpy
+
+WORKDIR /app
+COPY src/vlm_vla/simulation/libero_server.py /app/libero_server.py
+
+EXPOSE 8000
+CMD ["uvicorn", "libero_server:app", "--host", "0.0.0.0", "--port", "8000"]
