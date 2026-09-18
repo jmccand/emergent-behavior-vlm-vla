@@ -71,6 +71,9 @@ python scripts/check_setup.py --config configs/default.yaml
 # libero_spatial/object/goal/10; 0-89 for libero_90). Suite is set in
 # configs/default.yaml under simulator.task_suite.
 python scripts/run_episode.py --config configs/default.yaml --task-id 0 --episodes 1
+
+# Run every task in the suite, --episodes times each (a full benchmark sweep):
+python scripts/run_episode.py --config configs/default.yaml --all-tasks --episodes 5
 ```
 
 To inspect a run afterwards -- the rollout video plus every subgoal and raw
