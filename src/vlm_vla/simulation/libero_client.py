@@ -29,10 +29,15 @@ class LiberoSimulator(Simulator):
         port: int = 8000,
         task_suite: str = "libero_spatial",
         timeout: float = 30.0,
+        reset_timeout: float = 120.0,
     ) -> None:
         self.base_url = f"http://{host}:{port}"
         self.task_suite = task_suite
         self.timeout = timeout
+        # reset() can trigger a one-time LIBERO asset download (~30-40s) on a
+        # fresh container, or an env rebuild on task/suite change -- both
+        # comfortably exceed the per-step timeout above.
+        self.reset_timeout = reset_timeout
         self._check_health()
 
     def _check_health(self) -> None:
@@ -42,7 +47,7 @@ class LiberoSimulator(Simulator):
 
     def reset(self, task_id: int | None = None) -> Observation:
         payload = {"task_suite": self.task_suite, "task_id": task_id}
-        resp = requests.post(f"{self.base_url}/reset", json=payload, timeout=self.timeout)
+        resp = requests.post(f"{self.base_url}/reset", json=payload, timeout=self.reset_timeout)
         resp.raise_for_status()
         return _decode_observation(resp.json())
 
