@@ -17,7 +17,8 @@ from vlm_vla.config import build_action_agent, build_reasoning_agent, build_simu
 from vlm_vla.core import EpisodeRecorder
 from vlm_vla.orchestrator import HierarchicalAgent
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.getLogger("vlm_vla").setLevel(logging.INFO)
 
 
 def main() -> None:
