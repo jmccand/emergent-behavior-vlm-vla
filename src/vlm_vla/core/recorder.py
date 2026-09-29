@@ -12,13 +12,33 @@ from __future__ import annotations
 
 import json
 import logging
+import textwrap
 from pathlib import Path
 
 import numpy as np
+from PIL import Image, ImageDraw
 
 from vlm_vla.core.types import Action, Observation, Plan
 
 logger = logging.getLogger(__name__)
+
+
+def _burn_in_plan_text(frame: np.ndarray, text: str) -> np.ndarray:
+    """Return a copy of `frame` with `text` drawn in a band along the bottom."""
+    image = Image.fromarray(frame).convert("RGB")
+    draw = ImageDraw.Draw(image, "RGBA")
+    width, height = image.size
+
+    chars_per_line = max(1, width // 6)
+    lines = textwrap.wrap(text, width=chars_per_line) or [text]
+    line_height = 11
+    band_height = min(height, line_height * len(lines) + 8)
+
+    draw.rectangle([0, height - band_height, width, height], fill=(0, 0, 0, 170))
+    for i, line in enumerate(lines):
+        draw.text((4, height - band_height + 4 + i * line_height), line, fill=(255, 255, 255, 255))
+
+    return np.array(image)
 
 
 class EpisodeRecorder:
@@ -28,13 +48,18 @@ class EpisodeRecorder:
         self.camera = camera
         self.fps = fps
         self._frames: list[np.ndarray] = []
+        self._current_plan_text: str | None = None
         self._plans_file = (self.output_dir / "plans.jsonl").open("w")
         self._steps_file = (self.output_dir / "steps.jsonl").open("w")
 
     def record_frame(self, observation: Observation) -> None:
-        self._frames.append(observation.images[self.camera])
+        frame = observation.images[self.camera]
+        if self._current_plan_text is not None:
+            frame = _burn_in_plan_text(frame, self._current_plan_text)
+        self._frames.append(frame)
 
     def record_plan(self, plan: Plan) -> None:
+        self._current_plan_text = plan.instruction
         entry = {
             "step_issued": plan.step_issued,
             "instruction": plan.instruction,
