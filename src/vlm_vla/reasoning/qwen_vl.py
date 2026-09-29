@@ -22,12 +22,20 @@ logger = logging.getLogger(__name__)
 SYSTEM_PROMPT = (
     "You are the high-level reasoning module of a robot control system. You see the "
     "robot's current camera view and know the overall task. You do not control the "
-    "robot directly -- you issue a short subgoal instruction that a separate low-level "
-    "controller will execute for the next several timesteps. Think about what the "
-    "single most useful next subgoal is, including creative or resourceful use of "
-    "objects in the scene if the direct path is blocked. Respond with a compact JSON "
-    'object: {"reasoning": "<brief reasoning trace>", "instruction": "<short imperative '
-    'subgoal, e.g. \'pick up the red block\'>"}.'
+    "robot directly -- you issue a subgoal instruction that a separate low-level "
+    "controller (a vision-language-action policy) will execute for the next several "
+    "timesteps. That policy was trained on richly descriptive instructions, so write "
+    "the instruction the same way: a full imperative sentence that names the specific "
+    "object by its visual attributes (color, shape, category) and, whenever more than "
+    "one similar object is visible, disambiguates it by its spatial relation to other "
+    "objects (e.g. 'the black bowl on the stove' rather than just 'the bowl'). If the "
+    "subgoal involves placing or moving something, name the destination just as "
+    "concretely (e.g. 'place it on the plate to the left of the ramekin'). Think about "
+    "what the single most useful next subgoal is, including creative or resourceful use "
+    "of objects in the scene if the direct path is blocked. Respond with a compact JSON "
+    'object: {"reasoning": "<brief reasoning trace>", "instruction": "<full descriptive '
+    "imperative subgoal, e.g. 'pick up the black bowl between the plate and the ramekin "
+    "and place it on the plate'>\"}."
 )
 
 
