@@ -76,6 +76,19 @@ python scripts/run_episode.py --config configs/default.yaml --task-id 0 --episod
 python scripts/run_episode.py --config configs/default.yaml --all-tasks --episodes 5
 ```
 
+To run SmolVLA alone, with no reasoning agent/VLM in the loop -- fed the
+simulator's own ground-truth task description directly, matching how
+SmolVLA's own paper reports LIBERO results -- use `run_vla_only.py` instead;
+it accepts the same `--config`/`--task-id`/`--all-tasks`/`--episodes`/`--record`
+flags:
+
+```bash
+python scripts/run_vla_only.py --config configs/default.yaml --task-id 0 --episodes 1
+```
+
+This is useful as a baseline to isolate whether a performance gap comes from
+the harness/action agent itself or from the reasoning agent's subgoals.
+
 To inspect a run afterwards -- the rollout video plus every subgoal and raw
 model output -- pass `--record`:
 
