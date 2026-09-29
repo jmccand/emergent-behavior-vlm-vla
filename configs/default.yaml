@@ -19,5 +19,5 @@ simulator:
   task_suite: libero_spatial
 
 orchestrator:
-  replan_every: 30
+  replan_every: 50
   max_steps: 300
