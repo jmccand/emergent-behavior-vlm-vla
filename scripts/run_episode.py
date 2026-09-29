@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 
 from vlm_vla.config import build_action_agent, build_reasoning_agent, build_simulator, load_config
-from vlm_vla.core import EpisodeRecorder
+from vlm_vla.core import EpisodeRecorder, SummaryLog
 from vlm_vla.orchestrator import HierarchicalAgent
 
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -72,6 +72,9 @@ def main() -> None:
 
     cfg = load_config(args.config)
 
+    summary_path = Path(args.output_dir) / "summaries" / f"{time.strftime('%Y%m%d-%H%M%S')}-run_episode.jsonl"
+    summary_log = SummaryLog(summary_path)
+
     reasoning_agent = build_reasoning_agent(cfg.reasoning)
     action_agent = build_action_agent(cfg.action, n_action_steps=cfg.orchestrator.replan_every)
     simulator = build_simulator(cfg.simulator)
@@ -103,6 +106,23 @@ def main() -> None:
             if recorder is not None:
                 recorder.close()
 
+            summary_log.write(
+                mode="dual_system",
+                config_path=args.config,
+                task_suite=cfg.simulator.task_suite,
+                task_id=task_id if task_id is not None else 0,
+                episode=episode,
+                success=result.success,
+                steps=result.steps,
+                total_reward=result.total_reward,
+                num_plans=len(result.plans),
+                replan_every=cfg.orchestrator.replan_every,
+                max_steps=cfg.orchestrator.max_steps,
+                action_checkpoint=cfg.action.checkpoint,
+                reasoning_model_id=cfg.reasoning.model_id,
+                n_action_steps=cfg.orchestrator.replan_every,
+            )
+
             label = f"task {task_id} episode {episode}" if task_id is not None else f"episode {episode}"
             print(
                 f"[{label}] success={result.success} steps={result.steps} "
@@ -114,6 +134,7 @@ def main() -> None:
                 print(f"  recorded to {recorder.output_dir}")
 
     simulator.close()
+    summary_log.close()
 
 
 if __name__ == "__main__":

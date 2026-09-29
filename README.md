@@ -96,6 +96,18 @@ Each episode is written to its own timestamped directory under `outputs/`
 - `steps.jsonl` -- one row per control step (`action`, `reward`, `done`,
   `info`, and the instruction active at that step).
 
+Independent of `--record`, every episode from either script also appends a
+lightweight result line (task, success, steps, reward, etc.) to a JSONL file
+under `outputs/summaries/` -- cheap enough to leave on for full benchmark
+sweeps. Aggregate success rates across one or more of these files (deduping
+reruns of the same task/episode, keeping the latest) with:
+
+```bash
+python scripts/analyze_runs.py outputs/summaries
+```
+
+Pass `--json` for machine-readable output instead of the printed report.
+
 The first `run_episode.py`/`check_setup.py` call downloads Qwen3-VL-8B-Instruct
 (~16GB) and the SmolVLA checkpoint from Hugging Face Hub; later runs use the
 local cache (`~/.cache/huggingface`) and start much faster. The first
