@@ -86,8 +86,11 @@ python scripts/run_episode.py --config configs/default.yaml --task-id 0 --episod
 Each episode is written to its own timestamped directory under `outputs/`
 (override with `--output-dir`):
 
-- `episode.mp4` -- the rollout, one frame per step (`--camera` selects which
-  `Observation.images` key to record, e.g. `image` vs `image2` for wrist cam).
+- `episode.mp4` -- the rollout, one frame per step (`--camera` selects the
+  primary `Observation.images` key, e.g. `image` vs `image2` for wrist cam;
+  `--second-camera` is placed side-by-side with it, defaulting to `image2` so
+  the wrist view is included alongside the agentview camera by default -- pass
+  an empty string to disable it).
 - `plans.jsonl` -- one row per subgoal issued by the reasoning agent
   (`instruction`, `reasoning`, and the raw VLM response in `metadata`).
 - `steps.jsonl` -- one row per control step (`action`, `reward`, `done`,
