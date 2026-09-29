@@ -73,7 +73,7 @@ def main() -> None:
     cfg = load_config(args.config)
 
     reasoning_agent = build_reasoning_agent(cfg.reasoning)
-    action_agent = build_action_agent(cfg.action)
+    action_agent = build_action_agent(cfg.action, n_action_steps=cfg.orchestrator.replan_every)
     simulator = build_simulator(cfg.simulator)
 
     agent = HierarchicalAgent(

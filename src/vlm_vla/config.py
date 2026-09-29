@@ -72,11 +72,11 @@ def build_reasoning_agent(cfg: ReasoningConfig) -> ReasoningAgent:
     raise ValueError(f"Unknown reasoning backend: {cfg.backend!r}")
 
 
-def build_action_agent(cfg: ActionConfig) -> ActionAgent:
+def build_action_agent(cfg: ActionConfig, n_action_steps: int | None = None) -> ActionAgent:
     if cfg.backend == "smolvla":
         from vlm_vla.action.smolvla import SmolVLAActionAgent
 
-        return SmolVLAActionAgent(checkpoint=cfg.checkpoint, device=cfg.device)
+        return SmolVLAActionAgent(checkpoint=cfg.checkpoint, device=cfg.device, n_action_steps=n_action_steps)
     raise ValueError(f"Unknown action backend: {cfg.backend!r}")
 
 
