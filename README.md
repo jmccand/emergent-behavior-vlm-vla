@@ -8,7 +8,7 @@ The behavior that we seek to study is their ability to act resourcefully and cre
 
 ## Framework
 
-This repo implements a modular **dual-system** agent, inspired by [ThinkAct](https://arxiv.org/abs/2507.16815): a high-level **reasoning agent** (VLM) periodically issues a natural-language subgoal, and a low-level **action agent** (VLA) executes it at every control step. All three pieces — reasoning agent, action agent, and simulator — are abstract interfaces (`src/vlm_vla/core/`), so any of them can be swapped via `configs/default.yaml` without touching the orchestrator.
+This repo implements a modular **dual-system** agent, inspired by [ThinkAct](https://arxiv.org/abs/2507.16815): a high-level **reasoning agent** (VLM) periodically issues a natural-language subgoal, and a low-level **action agent** (VLA) executes it at every control step. All three pieces — reasoning agent, action agent, and simulator — are abstract interfaces (`src/vlm_vla/core/`), so any of them can be swapped via `configs/default.yaml` without touching the orchestrator. The action agent's own action-chunk horizon (`n_action_steps`, for SmolVLA) is kept in sync with `orchestrator.replan_every`, so a newly issued subgoal always takes effect immediately rather than being silently queued behind stale actions.
 
 Default backends:
 - **Reasoning:** [Qwen3-VL-8B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct), run natively via `transformers` (MPS).
