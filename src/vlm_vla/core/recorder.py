@@ -42,10 +42,17 @@ def _burn_in_plan_text(frame: np.ndarray, text: str) -> np.ndarray:
 
 
 class EpisodeRecorder:
-    def __init__(self, output_dir: str | Path, camera: str = "image", fps: int = 10) -> None:
+    def __init__(
+        self,
+        output_dir: str | Path,
+        camera: str = "image",
+        second_camera: str | None = "image2",
+        fps: int = 10,
+    ) -> None:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.camera = camera
+        self.second_camera = second_camera
         self.fps = fps
         self._frames: list[np.ndarray] = []
         self._current_plan_text: str | None = None
@@ -54,6 +61,8 @@ class EpisodeRecorder:
 
     def record_frame(self, observation: Observation) -> None:
         frame = observation.images[self.camera]
+        if self.second_camera is not None and self.second_camera in observation.images:
+            frame = np.hstack([frame, observation.images[self.second_camera]])
         if self._current_plan_text is not None:
             frame = _burn_in_plan_text(frame, self._current_plan_text)
         self._frames.append(frame)

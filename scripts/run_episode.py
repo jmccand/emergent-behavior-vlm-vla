@@ -59,6 +59,12 @@ def main() -> None:
     )
     parser.add_argument("--output-dir", default="outputs", help="Base directory for --record output")
     parser.add_argument("--camera", default="image", help="Observation camera key to record frames from")
+    parser.add_argument(
+        "--second-camera",
+        default="image2",
+        help="Additional observation camera key placed side-by-side with --camera in the recorded "
+        "video (defaults to the wrist camera); pass an empty string to disable",
+    )
     args = parser.parse_args()
 
     if args.all_tasks and args.task_id is not None:
@@ -86,7 +92,9 @@ def main() -> None:
                 timestamp = time.strftime("%Y%m%d-%H%M%S")
                 suffix = f"-task{task_id}" if args.all_tasks else ""
                 episode_dir = Path(args.output_dir) / f"{timestamp}{suffix}-ep{episode}"
-                recorder = EpisodeRecorder(episode_dir, camera=args.camera)
+                recorder = EpisodeRecorder(
+                    episode_dir, camera=args.camera, second_camera=args.second_camera or None
+                )
 
             result = agent.run_episode(
                 task_id=task_id, max_steps=cfg.orchestrator.max_steps, recorder=recorder
